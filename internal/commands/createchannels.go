@@ -52,17 +52,20 @@ func CreateChannelsCommand(s *discordgo.Session, i *discordgo.InteractionCreate,
 		}
 
 		// Teams abrufen
-		homeTeam, err := db.GetTeamByID(match.TeamHomeID)
-		if err != nil {
-			errors++
-			errorMsg := fmt.Sprintf("Match ID %d: Fehler beim Abrufen des Heimteams (ID %d): %v", match.ID, match.TeamHomeID, err)
-			log.Println("[CreateChannels]", errorMsg)
-			errorLog = append(errorLog, errorMsg)
-			continue
+		var homeTeam *database.Team
+		if match.TeamHomeID != 0 {
+			homeTeam, err = db.GetTeamByID(match.TeamHomeID)
+			if err != nil {
+				errors++
+				errorMsg := fmt.Sprintf("Match ID %d: Fehler beim Abrufen des Heimteams (ID %d): %v", match.ID, match.TeamHomeID, err)
+				log.Println("[CreateChannels]", errorMsg)
+				errorLog = append(errorLog, errorMsg)
+				continue
+			}
 		}
 
 		var awayTeam *database.Team
-		if match.TeamAwayID.Valid {
+		if match.TeamAwayID.Valid && match.TeamAwayID.Int64 != 0 {
 			awayTeam, err = db.GetTeamByID(int(match.TeamAwayID.Int64))
 			if err != nil {
 				errors++
@@ -73,13 +76,23 @@ func CreateChannelsCommand(s *discordgo.Session, i *discordgo.InteractionCreate,
 			}
 		}
 
+		// Überspringe, wenn beide Teams NULL/0 sind
+		if homeTeam == nil && awayTeam == nil {
+			skipped++
+			continue
+		}
+
 		// Channel erstellen
 		channelID, err := channels.CreateMatchChannel(s, i.GuildID, categoryID, match, homeTeam, awayTeam)
 		if err != nil {
 			errors++
-			matchName := fmt.Sprintf("%s vs %s", homeTeam.Name, "Unknown")
-			if awayTeam != nil {
+			matchName := "Unknown vs Unknown"
+			if homeTeam != nil && awayTeam != nil {
 				matchName = fmt.Sprintf("%s vs %s", homeTeam.Name, awayTeam.Name)
+			} else if homeTeam != nil {
+				matchName = fmt.Sprintf("%s vs Game-free", homeTeam.Name)
+			} else if awayTeam != nil {
+				matchName = fmt.Sprintf("Game-free vs %s", awayTeam.Name)
 			}
 			errorMsg := fmt.Sprintf("Match ID %d (%s): Fehler beim Erstellen des Discord-Channels: %v", match.ID, matchName, err)
 			log.Println("[CreateChannels]", errorMsg)
@@ -94,9 +107,13 @@ func CreateChannelsCommand(s *discordgo.Session, i *discordgo.InteractionCreate,
 				log.Printf("[CreateChannels] Match ID %d: Channel %s konnte nicht gelöscht werden: %v", match.ID, channelID, delErr)
 			}
 			errors++
-			matchName := fmt.Sprintf("%s vs %s", homeTeam.Name, "Unknown")
-			if awayTeam != nil {
+			matchName := "Unknown vs Unknown"
+			if homeTeam != nil && awayTeam != nil {
 				matchName = fmt.Sprintf("%s vs %s", homeTeam.Name, awayTeam.Name)
+			} else if homeTeam != nil {
+				matchName = fmt.Sprintf("%s vs Game-free", homeTeam.Name)
+			} else if awayTeam != nil {
+				matchName = fmt.Sprintf("Game-free vs %s", awayTeam.Name)
 			}
 			errorMsg := fmt.Sprintf("Match ID %d (%s): Fehler beim Speichern der Channel-ID in DB: %v", match.ID, matchName, err)
 			log.Println("[CreateChannels]", errorMsg)
