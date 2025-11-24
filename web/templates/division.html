@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Division {{ division }} - Prestige League{% endblock %}
+
+{% block content %}
+<nav>
+    <a href="/">← Zurück / Back</a>
+</nav>
+
+<h2 style="color: #60a5fa; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);">Division {{ division }} - Tabelle / Standings</h2>
+
+<!-- Legende -->
+<div class="rank-legend">
+    {% if division == 1 %}
+        <div class="legend-item"><div class="legend-box playoff"></div>Playoffs (1-6)</div>
+        <div class="legend-item"><div class="legend-box relegation"></div>Relegation (9-10)</div>
+    {% elif division == 2 %}
+        <div class="legend-item"><div class="legend-box relegation"></div>Relegation (1-4)</div>
+        <div class="legend-item"><div class="legend-box demotion"></div>Abstieg (9-10)</div>
+    {% else %}
+        <div class="legend-item"><div class="legend-box promotion"></div>Aufstieg (1-2)</div>
+        <div class="legend-item"><div class="legend-box demotion"></div>Abstieg ({% if standings|length > 8 %}9-10{% else %}{{ standings|length - 1 }}-{{ standings|length }}{% endif %})</div>
+    {% endif %}
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Pos</th>
+            <th>Team</th>
+            <th>Spiele / Played</th>
+            <th>Siege / Wins</th>
+            <th>Niederlagen / Losses</th>
+            <th>Games +/-</th>
+            <th>Punkte / Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for team in standings %}
+        {% set position = loop.index %}
+        {% set total_teams = standings|length %}
+        {% set row_class = "" %}
+        
+        {# Division 1: Playoffs 1-6, Relegation 9-10 #}
+        {% if division == 1 %}
+            {% if position <= 6 %}
+                {% set row_class = "rank-playoff" %}
+            {% elif position >= 9 and position <= 10 %}
+                {% set row_class = "rank-relegation" %}
+            {% endif %}
+        
+        {# Division 2: Relegation 1-4, Abstieg 9-10 #}
+        {% elif division == 2 %}
+            {% if position <= 4 %}
+                {% set row_class = "rank-relegation" %}
+            {% elif position >= 9 and position <= 10 %}
+                {% set row_class = "rank-demotion" %}
+            {% endif %}
+        
+        {# Division 3-5: Aufstieg 1-2, Abstieg letzte 2 #}
+        {% else %}
+            {% if position <= 2 %}
+                {% set row_class = "rank-promotion" %}
+            {% elif position >= total_teams - 1 %}
+                {% set row_class = "rank-demotion" %}
+            {% endif %}
+        {% endif %}
+        
+        <tr class="{{ row_class }}">
+            <td class="position">{{ position }}</td>
+            <td><strong>{{ team.name }}</strong></td>
+            <td style="text-align: center;">{{ team.played }}</td>
+            <td style="text-align: center;">{{ team.wins }}</td>
+            <td style="text-align: center;">{{ team.losses }}</td>
+            <td style="text-align: center;">{{ team.games_won - team.games_lost }}</td>
+            <td style="text-align: center;"><strong>{{ team.points }}</strong></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 style="color: #60a5fa; margin: 40px 0 20px 0; text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);">Spielplan / Matches</h2>
+
+{% for matchday, matches in matchdays %}
+<div class="matchday-section">
+    <h3 class="matchday-title">Spieltag / Week {{ matchday }}</h3>
+    
+    {% for match in matches %}
+    <div class="match-card {% if match.completed %}completed{% else %}pending{% endif %}">
+        <div class="match-teams">
+            <strong>{{ match.home_team }}</strong> vs <strong>{{ match.away_team }}</strong>
+        </div>
+        
+        {% if match.completed %}
+        <div class="match-score">
+            {{ match.score_home }} : {{ match.score_away }}
+        </div>
+        {% else %}
+        <div class="match-status">
+            <span class="badge badge-pending">Ausstehend / Pending</span>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+
+{% endblock %}

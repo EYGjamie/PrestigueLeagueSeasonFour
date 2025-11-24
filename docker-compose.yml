@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v3.2
+    container_name: prestigeleague-traefik
+    restart: unless-stopped
+    command:
+      # API und Dashboard
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP zu HTTPS Redirect
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Docker Provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik Dashboard (nur intern)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - web-network
+    labels:
+      # Dashboard aktivieren
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.prestigeleague.de`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      # Basic Auth für Dashboard (optional)
+      # - "traefik.http.routers.traefik.middlewares=auth"
+      # - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$..."
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prestigeleague-bot
+    restart: unless-stopped
+    environment:
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    networks:
+      - web-network
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: prestigeleague-web
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - ./data:/app/data:ro
+      - ./web/bg:/app/bg:ro
+    networks:
+      - web-network
+    labels:
+      - "traefik.enable=true"
+      # HTTP Router
+      - "traefik.http.routers.web.rule=Host(`prestigeleague.de`) || Host(`www.prestigeleague.de`)"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.web.loadbalancer.server.port=5000"
+      # WWW Redirect Middleware (optional)
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https://www\\.prestigeleague\\.de/(.*)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://prestigeleague.de/$${1}"
+      # Security Headers
+      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-Frame-Options=SAMEORIGIN"
+      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.X-Content-Type-Options=nosniff"
+      - "traefik.http.middlewares.security-headers.headers.customResponseHeaders.Referrer-Policy=strict-origin-when-cross-origin"
+      - "traefik.http.routers.web.middlewares=security-headers"
+
+networks:
+  web-network:
+    driver: bridge
+
+volumes:
+  bot-data:
+  letsencrypt-data:

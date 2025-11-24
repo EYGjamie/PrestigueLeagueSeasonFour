@@ -1,0 +1,15 @@
+# Discord Bot Token
+# Erstelle einen Bot unter https://discord.com/developers/applications
+# und füge das Token hier ein oder setze die DISCORD_BOT_TOKEN Umgebungsvariable
+bot_token: "DEIN_BOT_TOKEN_HIER"
+
+# Liga Einstellungen
+league:
+  name: "Prestige League Season Four"
+  guild_id: ""  # Discord Server ID
+  
+# Rollen IDs (optional)
+roles:
+  admin: ""
+  moderator: ""
+  player: ""

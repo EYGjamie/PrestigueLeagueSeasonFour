@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    {% for div in divisions %}
+    <a href="/division/{{ div }}">Division {{ div }}</a>
+    {% endfor %}
+</nav>
+
+<div style="text-align: center; padding: 40px;">
+    <h2 style="color: #667eea; margin-bottom: 20px;">Wähle eine Division / Choose a Division</h2>
+    <p style="color: #666;">Klicke auf eine Division oben, um Tabelle und Ergebnisse zu sehen.</p>
+    <p style="color: #666;">Click on a division above to view standings and results.</p>
+</div>
+{% endblock %}
