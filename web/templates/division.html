@@ -17,9 +17,14 @@
     {% elif division == 2 %}
         <div class="legend-item"><div class="legend-box relegation"></div>Relegation (1-4)</div>
         <div class="legend-item"><div class="legend-box demotion"></div>Abstieg (9-10)</div>
-    {% else %}
+    {% elif division == 3 %}
         <div class="legend-item"><div class="legend-box promotion"></div>Aufstieg (1-2)</div>
-        <div class="legend-item"><div class="legend-box demotion"></div>Abstieg ({% if standings|length > 8 %}9-10{% else %}{{ standings|length - 1 }}-{{ standings|length }}{% endif %})</div>
+        <div class="legend-item"><div class="legend-box demotion"></div>Abstieg (9-10)</div>
+    {% elif division == 4 %}
+        <div class="legend-item"><div class="legend-box promotion"></div>Aufstieg (1-2)</div>
+        <div class="legend-item"><div class="legend-box demotion"></div>Abstieg (8-9)</div>
+    {% elif division == 5 %}
+        <div class="legend-item"><div class="legend-box promotion"></div>Aufstieg (1-2)</div>
     {% endif %}
 </div>
 
@@ -57,12 +62,26 @@
                 {% set row_class = "rank-demotion" %}
             {% endif %}
         
-        {# Division 3-5: Aufstieg 1-2, Abstieg letzte 2 #}
-        {% else %}
+        {# Division 3: Aufstieg 1-2, Abstieg 9-10 #}
+        {% elif division == 3 %}
             {% if position <= 2 %}
                 {% set row_class = "rank-promotion" %}
-            {% elif position >= total_teams - 1 %}
+            {% elif position >= 9 and position <= 10 %}
                 {% set row_class = "rank-demotion" %}
+            {% endif %}
+        
+        {# Division 4: Aufstieg 1-2, Abstieg 8-9 (nur 9 Teams) #}
+        {% elif division == 4 %}
+            {% if position <= 2 %}
+                {% set row_class = "rank-promotion" %}
+            {% elif position >= 8 and position <= 9 %}
+                {% set row_class = "rank-demotion" %}
+            {% endif %}
+        
+        {# Division 5: Aufstieg 1-2, kein Abstieg #}
+        {% elif division == 5 %}
+            {% if position <= 2 %}
+                {% set row_class = "rank-promotion" %}
             {% endif %}
         {% endif %}
         
