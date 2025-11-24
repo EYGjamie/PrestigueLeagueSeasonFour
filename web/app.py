@@ -107,11 +107,17 @@ def get_matches_by_division(division):
     
     matches = []
     for row in cursor.fetchall():
+        # Überspringe Spiele, bei denen ein Team NULL, "0" oder nicht vorhanden ist
+        if not row['away_team'] or row['away_team'] == '0':
+            continue
+        if not row['home_team'] or row['home_team'] == '0':
+            continue
+            
         matches.append({
             'id': row['id'],
             'matchday': row['matchday'],
             'home_team': row['home_team'],
-            'away_team': row['away_team'] if row['away_team'] else 'Free Win',
+            'away_team': row['away_team'],
             'score_home': row['score_home'],
             'score_away': row['score_away'],
             'reported_at': row['reported_at'],
