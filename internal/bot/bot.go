@@ -51,9 +51,15 @@ func registerCommands(s *discordgo.Session) {
 		},
 		{
 			Name:                     "createchannels",
-			Description:              "Erstellt Discord Channels für alle Matches aller Divisionen eines Spieltags",
+			Description:              "Erstellt Discord Channels für alle Matches einer Division und eines Spieltags",
 			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
 			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "division",
+					Description: "Die Division",
+					Required:    true,
+				},
 				{
 					Type:        discordgo.ApplicationCommandOptionInteger,
 					Name:        "matchday",
