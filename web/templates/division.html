@@ -36,8 +36,9 @@
             <th>Spiele / Played</th>
             <th>Siege / Wins</th>
             <th>Niederlagen / Losses</th>
+            <th>Games Won</th>
+            <th>Games Lost</th>
             <th>Games +/-</th>
-            <th>Punkte / Points</th>
         </tr>
     </thead>
     <tbody>
@@ -91,8 +92,9 @@
             <td style="text-align: center;">{{ team.played }}</td>
             <td style="text-align: center;">{{ team.wins }}</td>
             <td style="text-align: center;">{{ team.losses }}</td>
-            <td style="text-align: center;">{{ team.games_won - team.games_lost }}</td>
-            <td style="text-align: center;"><strong>{{ team.points }}</strong></td>
+            <td style="text-align: center;">{{ team.games_won }}</td>
+            <td style="text-align: center;">{{ team.games_lost }}</td>
+            <td style="text-align: center;"><strong>{{ team.games_won - team.games_lost }}</strong></td>
         </tr>
         {% endfor %}
     </tbody>
