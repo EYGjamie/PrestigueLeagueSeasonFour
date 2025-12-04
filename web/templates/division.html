@@ -88,7 +88,7 @@
         
         <tr class="{{ row_class }}">
             <td class="position">{{ position }}</td>
-            <td><strong{% if team.is_disqualified %} style="text-decoration: line-through; opacity: 0.6;"{% endif %}>{{ team.name }}{% if team.is_disqualified %} 🚫{% endif %}</strong></td>
+            <td><strong{% if team.is_disqualified %} style="text-decoration: line-through; opacity: 0.6;"{% endif %}>{% if team.is_disqualified %} 🚫{% endif %}{{ team.name }}{% if team.is_disqualified %} 🚫{% endif %}</strong></td>
             <td style="text-align: center;">{{ team.played }}</td>
             <td style="text-align: center;">{{ team.wins }}</td>
             <td style="text-align: center;">{{ team.losses }}</td>
