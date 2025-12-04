@@ -126,9 +126,49 @@ func sendWelcomeMessage(s *discordgo.Session, channelID string, homeTeam, awayTe
 	// Embed erstellen
 	var embed *discordgo.MessageEmbed
 
-	// Prüfen, ob es ein spielfreies Match ist
-	if isGameFree(awayTeam) || isGameFree(homeTeam) {
-		// Welches Team hat spielfrei?
+	// Prüfen, ob ein Team disqualifiziert ist
+	homeDisqualified := !isGameFree(homeTeam) && homeTeam.IsDisqualified
+	awayDisqualified := !isGameFree(awayTeam) && awayTeam.IsDisqualified
+
+	if homeDisqualified || awayDisqualified {
+		// Disqualifiziertes Team
+		disqualifiedTeamName := ""
+		winningTeamName := ""
+
+		if homeDisqualified {
+			disqualifiedTeamName = homeTeam.Name
+			if !isGameFree(awayTeam) {
+				winningTeamName = awayTeam.Name
+			}
+		} else {
+			disqualifiedTeamName = awayTeam.Name
+			if !isGameFree(homeTeam) {
+				winningTeamName = homeTeam.Name
+			}
+		}
+
+		embed = &discordgo.MessageEmbed{
+			Title:       "🚫 Free Win - Team Disqualified",
+			Description: fmt.Sprintf("**%s** wurde disqualifiziert.\n**%s** has been disqualified.", disqualifiedTeamName, disqualifiedTeamName),
+			Color:       0xFF0000, // Rot
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:   "✅ Winner / Gewinner",
+					Value:  fmt.Sprintf("**%s** gewinnt automatisch mit 3:0 / wins automatically 3:0", winningTeamName),
+					Inline: false,
+				},
+				{
+					Name:   "ℹ️ Information",
+					Value:  "Dieses Match wird automatisch als Free Win gewertet.\nThis match is automatically counted as a Free Win.",
+					Inline: false,
+				},
+			},
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: "Dieser Channel dient nur zur Information | This channel is for information only",
+			},
+		}
+	} else if isGameFree(awayTeam) || isGameFree(homeTeam) {
+		// Spielfrei-Nachricht (unverändert)
 		teamName := ""
 		if !isGameFree(homeTeam) {
 			teamName = homeTeam.Name
@@ -138,7 +178,6 @@ func sendWelcomeMessage(s *discordgo.Session, channelID string, homeTeam, awayTe
 			teamName = "Unbekanntes Team"
 		}
 
-		// Spielfrei-Nachricht
 		embed = &discordgo.MessageEmbed{
 			Title:       "🌴 Spielfreie Woche / Game-free Week",
 			Description: fmt.Sprintf("**%s** hat in **Woche %d** spielfrei!\n**%s** has a bye in **Week %d**!", teamName, match.Matchday, teamName, match.Matchday),
@@ -160,10 +199,9 @@ func sendWelcomeMessage(s *discordgo.Session, channelID string, homeTeam, awayTe
 			},
 		}
 	} else {
-		// Normales Match
+		// Normales Match (unverändert)
 		awayTeamName := awayTeam.Name
 
-		// Best-of Format basierend auf Division
 		matchDetails := "Best of 5 (First to 3 wins)\nBest of 5 (Erster mit 3 Siegen)"
 		if match.Division == 1 || match.Division == 2 {
 			matchDetails = "Best of 7 (First to 4 wins)\nBest of 7 (Erster mit 4 Siegen)"

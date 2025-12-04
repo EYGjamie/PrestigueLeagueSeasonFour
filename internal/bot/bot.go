@@ -78,6 +78,32 @@ func registerCommands(s *discordgo.Session) {
 			Name:        "report_result",
 			Description: "Trägt das Ergebnis eines Matches ein (nur in Match-Channels)",
 		},
+		{
+			Name:                     "disqualify",
+			Description:              "Disqualifiziert ein Team (alle Matches werden mit 0:3 gewertet)",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionRole,
+					Name:        "team",
+					Description: "Die Team-Rolle des zu disqualifizierenden Teams",
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:                     "requalify",
+			Description:              "Hebt die Disqualifikation eines Teams auf",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionRole,
+					Name:        "team",
+					Description: "Die Team-Rolle des Teams",
+					Required:    true,
+				},
+			},
+		},
 	}
 
 	for _, cmd := range commands {
@@ -137,6 +163,18 @@ func interactionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		commands.CreateChannelsCommand(s, i, db)
 	case "report_result":
 		commands.ReportResultCommand(s, i, db)
+	case "disqualify":
+		if !hasAdminPermission(s, i) {
+			respondError(s, i, "❌ Dieser Command kann nur von Administratoren ausgeführt werden.")
+			return
+		}
+		commands.DisqualifyCommand(s, i, db)
+	case "requalify":
+		if !hasAdminPermission(s, i) {
+			respondError(s, i, "❌ Dieser Command kann nur von Administratoren ausgeführt werden.")
+			return
+		}
+		commands.RequalifyCommand(s, i, db)
 	}
 }
 

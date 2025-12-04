@@ -32,12 +32,13 @@ def calculate_standings(division):
     conn = get_db()
     cursor = conn.cursor()
     
-    # Alle Teams der Division
+    # Alle Teams der Division mit Disqualified-Status
     cursor.execute("""
-        SELECT id, name FROM teams WHERE division = ? ORDER BY name
+        SELECT id, name, is_disqualified FROM teams WHERE division = ? ORDER BY name
     """, (division,))
     teams = {row['id']: {
         'name': row['name'],
+        'is_disqualified': bool(row['is_disqualified']),
         'played': 0,
         'wins': 0,
         'losses': 0,

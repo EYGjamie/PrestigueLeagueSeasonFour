@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS teams (
     name TEXT NOT NULL UNIQUE,
     division INTEGER NOT NULL,
     role_id TEXT,
+    is_disqualified BOOLEAN DEFAULT 0,
+    disqualified_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
