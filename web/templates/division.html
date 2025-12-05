@@ -6,6 +6,21 @@
 <nav>
     <a href="/">← Zurück / Back</a>
 </nav>
+{% if division == 1 %}
+<div style="text-align: center; margin: 20px 0;">
+    <a href="https://liquipedia.net/rocketleague/Astellia_Esports/Prestige_League/Season_4" 
+       target="_blank" 
+       rel="noopener noreferrer"
+       style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span>Liquipedia - Division 1 Season 4</span>
+    </a>
+</div>
+{% endif %}
 
 <h2 style="color: #60a5fa; margin-bottom: 20px; text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);">Division {{ division }} - Tabelle / Standings</h2>
 
